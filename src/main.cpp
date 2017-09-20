@@ -9,6 +9,8 @@
 #include "rendering/shader.h"
 #include "rendering/lsystem.h"
 
+#include "test.cuh"
+
 void error_callback(int error, const char* description)
 {
     printf("GLFW Error: %s\n", description);
@@ -51,6 +53,8 @@ glfwSetCursorPos(window, WIDTH/2, HEIGHT/2);
 
 int main()
 {
+    PrintCudaInfo();
+
     if (!glfwInit())
     {
         return -1;
