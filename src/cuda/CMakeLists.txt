@@ -1,1 +1,1 @@
-cuda_add_library (cudalib STATIC test.cu)
+cuda_add_library (cudalib STATIC cudainfo.cu)

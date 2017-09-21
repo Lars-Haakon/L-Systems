@@ -9,8 +9,6 @@
 #include "rendering/shader.h"
 #include "rendering/lsystem.h"
 
-#include "test.cuh"
-
 void error_callback(int error, const char* description)
 {
     printf("GLFW Error: %s\n", description);
@@ -53,8 +51,6 @@ glfwSetCursorPos(window, WIDTH/2, HEIGHT/2);
 
 int main()
 {
-    PrintCudaInfo();
-
     if (!glfwInit())
     {
         return -1;
@@ -87,6 +83,7 @@ int main()
         glfwTerminate();
         return -1;
     }
+
     printOpenGLInfo();
 
     glEnable(GL_CULL_FACE);
@@ -94,11 +91,11 @@ int main()
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
     // camera setup
-    Camera cam(Transform(glm::vec3(0, 4.0f, 8.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 10.0f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
+    Camera cam(Transform(glm::vec3(0, 0.0f, 4.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 10.0f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
 
-    /*LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
-    lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
-    lSystem.Generate(2);*/
+    LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
+    //lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
+    //lSystem.Generate(2);
 
     /*LSystem lSystem("F+F+F+F", 0.5f, 90.0f);
     lSystem.AddProduction('F', "F+f-FF+F+FF+Ff+FF-f+FF-F-FF-Ff-FFF");
@@ -121,12 +118,12 @@ int main()
     lSystem.Generate(10);*/
 
     // Hilbert Curve
-    LSystem lSystem("A", 0.5f, 90.0f);
-    lSystem.AddProduction('A', "B-F+CFC+F-D&F^D-F+&&CFC+F+B//");
-    lSystem.AddProduction('B', "A&F^CFB^F^D^^-F-D^|F^B|FC^F^A//");
-    lSystem.AddProduction('C', "|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D//");
-    lSystem.AddProduction('D', "|CFB-F+B|FA&F^A&&FB-F+B|FC//");
-    lSystem.Generate(3);
+    /*LSystem lSystem("A", 0.5f, 90.0f);*/
+    //lSystem.AddProduction('A', "B-F+CFC+F-D&F^D-F+&&CFC+F+B//");
+    //lSystem.AddProduction('B', "A&F^CFB^F^D^^-F-D^|F^B|FC^F^A//");
+    //lSystem.AddProduction('C', "|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D//");
+    //lSystem.AddProduction('D', "|CFB-F+B|FA&F^A&&FB-F+B|FC//");
+    //lSystem.Generate(3);
 
     /*float vertices[] = {-1.0f, -1.0f, 0.0f,
         1.0f, -1.0f, 0.0f,

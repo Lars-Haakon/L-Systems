@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "lsystem.h"
+#include "../cuda/cudainfo.cuh"
 
 LSystem::LSystem(std::string axiom, float distance, float angle, Transform transform)
 : SceneObject(transform)
@@ -12,6 +13,15 @@ LSystem::LSystem(std::string axiom, float distance, float angle, Transform trans
 
 	glGenBuffers(1, &m_vbo);
     glGenBuffers(1, &m_ibo);
+
+    m_size = 4*2*3;
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, m_size * sizeof(float), 0, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    FillData(m_vbo);
 }
 
 LSystem::~LSystem()
@@ -170,8 +180,9 @@ void LSystem::Generate(int n)
 
 void LSystem::Draw()
 {
-    glBindVertexArray(m_ibo);
-	glDrawElements(GL_LINES, m_size, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(m_vbo);
+    glDrawArrays(GL_LINES, 0, m_size);
+	//glDrawElements(GL_LINES, m_size, GL_UNSIGNED_INT, 0);
 }
 
 std::string LSystem::GetSuccessor(char predecessor)
