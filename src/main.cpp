@@ -95,7 +95,7 @@ int main()
 
     LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
     //lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
-    //lSystem.Generate(2);
+    lSystem.Generate(0);
 
     /*LSystem lSystem("F+F+F+F", 0.5f, 90.0f);
     lSystem.AddProduction('F', "F+f-FF+F+FF+Ff+FF-f+FF-F-FF-Ff-FFF");

@@ -13,15 +13,6 @@ LSystem::LSystem(std::string axiom, float distance, float angle, Transform trans
 
 	glGenBuffers(1, &m_vbo);
     glGenBuffers(1, &m_ibo);
-
-    m_size = 4*2*3;
-
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, m_size * sizeof(float), 0, GL_STATIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0);
-
-    FillData(m_vbo);
 }
 
 LSystem::~LSystem()
@@ -53,7 +44,16 @@ void LSystem::Generate(int n)
         generatedString = iterationString;
     }
 
-    std::vector<float> vertices;
+    m_size = 4*2*3;
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, m_size * sizeof(float), 0, GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(0);
+
+    FillData(m_vbo);
+
+    /*std::vector<float> vertices;
     std::vector<int> indices;
 
     Transform turtle(glm::vec3(0, 0, 0), glm::normalize(glm::quat(1, 1, 0, 0)));
@@ -175,7 +175,7 @@ void LSystem::Generate(int n)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
 
-	m_size = indices.size();
+	m_size = indices.size();*/
 }
 
 void LSystem::Draw()
