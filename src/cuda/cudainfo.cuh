@@ -2,6 +2,7 @@
 #define CUDAINFO_CUH
 
 extern void PrintCudaInfo();
-extern void FillData(unsigned int vbo);
+extern int FillData(float* lookUpTable, int lookUpTableSize, const char* module, int moduleLength);
+extern void FillVBO(unsigned int vbo);
 
 #endif

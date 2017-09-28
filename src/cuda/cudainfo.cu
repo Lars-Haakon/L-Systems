@@ -14,16 +14,17 @@ void PrintCudaInfo()
     printf("CUDA device name: %s\n" , device_prop.name);
 }
 
-__global__ void HillisSteeleScan(float *g_idata, float *g_odata, int n)
+__global__ void HillisSteeleScan(float* transform, int *count, int n)
 {
-    extern __shared__ float temp[]; // allocated on invocation
+    extern __shared__ int temp[]; // allocated on invocation
+
     int tId = threadIdx.x;
     int pout = 0, pin = 1;
     // Load input into shared memory.
     // This is exclusive scan, so shift right by one
     // and set first element to 0
-    //temp[pout*n + tId] = g_idata[tId]; // inclusive
-    temp[pout*n + tId] = (tId > 0) ? g_idata[tId-1] : 0; // exclusive
+    temp[pout*n + tId] = count[tId]; // inclusive
+    //temp[pout*n + tId] = (tId > 0) ? in[tId-1] : 0; // exclusive
     __syncthreads();
     for (int offset = 1; offset < n; offset *= 2)
     {
@@ -37,34 +38,70 @@ __global__ void HillisSteeleScan(float *g_idata, float *g_odata, int n)
         __syncthreads();
     }
 
-    g_odata[tId] = temp[pout*n+tId]; // write output
+    count[tId] = temp[pout*n+tId]; // write output
 }
 
-__global__ void fill(float* f)
+__global__ void Count(float* device_lookUpTable, char* device_module, float* device_transform, int* device_count)
 {
-    f[threadIdx.x*3] = threadIdx.x*3.0f;
-    f[threadIdx.x*3+1] = 0.0f;
-    f[threadIdx.x*3+2] = 0.0f;
+    int bId = blockIdx.x;
+    int tId = threadIdx.x;
+
+    device_transform[bId*16 + tId] = device_lookUpTable[device_module[bId]*16 + tId];
+
+    if(tId == 0) // only need 1 thread to set value to avoid conflicts
+    {
+        device_count[bId] = 0;
+
+        if(device_module[bId] == 'F')
+        {
+            device_count[bId] = 1;
+        }
+    }
 }
 
-void FillData(unsigned int vbo)
+int FillData(float* lookUpTable, int lookUpTableSize, const char* module, int moduleLength)
 {
-    /*texture<float> texture_reference(2);
-    const void* tobereference;
-    cudaBindTexture( NULL, texture_reference, tobereference, 0 );
+    // move lookUpTable to device
+    float* device_lookUpTable = 0;
+    cudaMalloc((void**)&device_lookUpTable, lookUpTableSize);
+    cudaMemcpy((void*)device_lookUpTable, (void*)lookUpTable, lookUpTableSize, cudaMemcpyHostToDevice);
 
+    char* device_module = 0;
+    cudaMalloc((void**)&device_module, moduleLength);
+    cudaMemcpy((void*)device_module, (void*)module, moduleLength, cudaMemcpyHostToDevice);
 
-    cudaUnbindTexture ( texture_reference );*/
+    float* device_transform = 0;
+    cudaMalloc((void**)&device_transform, 2*moduleLength*16*sizeof(float)); // multiply by 2 to use this as a double buffer
 
-    struct cudaGraphicsResource* cudaResource;
-    cudaGraphicsGLRegisterBuffer(&cudaResource, vbo, cudaGraphicsMapFlagsNone);
+    int* device_count = 0;
+    cudaMalloc((void**)&device_count, moduleLength * sizeof(int));
 
-    cudaGraphicsMapResources(1, &cudaResource, 0);
-    float* positions;
-    size_t num_bytes;
-    cudaGraphicsResourceGetMappedPointer((void**)&positions, &num_bytes, cudaResource);
+    dim3 numThreadsPerBlock(16);
+    dim3 numBlocks(moduleLength);
+    Count<<<numBlocks, numThreadsPerBlock>>>(device_lookUpTable, device_module, device_transform, device_count);
 
-    int n = 8;
+    dim3 numThreadsPerBlock2(moduleLength);
+    dim3 numBlocks2(1);
+    HillisSteeleScan<<<numBlocks2, numThreadsPerBlock2, 2*moduleLength*sizeof(int)>>>(device_transform, device_count, moduleLength);
+
+    // get the last value
+    int size = -1;
+    cudaMemcpy(&size, device_count + moduleLength-1, sizeof(int), cudaMemcpyDeviceToHost);
+
+    cudaFree(device_count);
+    cudaFree(device_module);
+    cudaFree(device_lookUpTable);
+
+    return size;
+
+    /*int* host_out = (int*) malloc(moduleLength*sizeof(int));
+    cudaMemcpy(host_out, device_count, moduleLength*sizeof(int), cudaMemcpyDeviceToHost);
+    for(int i = 0; i < moduleLength; i++)
+    {
+        printf("%d\n", host_out[i]);
+    }*/
+
+    /*int n = 512; // 512 is max for the HillisSteeleScan
     float* host_in = (float*)malloc(n*sizeof(float));
     for(int i = 0; i < n; i++)
     {
@@ -78,18 +115,38 @@ void FillData(unsigned int vbo)
 
     cudaMemcpy((void*)device_in, (void*)host_in, n*sizeof(float), cudaMemcpyHostToDevice);
 
-    dim3 numThreadsPerBlock(n);
-    dim3 numBlocks(1);
-    scan<<<numBlocks, numThreadsPerBlock, 2*n*sizeof(float)>>>(device_in, device_out, n);
+    HillisSteeleScan<<<numBlocks, numThreadsPerBlock, 2*n*sizeof(float)>>>(device_in, device_out, n);
 
     float* host_out = (float*) malloc(n*sizeof(float));
     cudaMemcpy(host_out, device_out, n*sizeof(float), cudaMemcpyDeviceToHost);
     for(int i = 0; i < n; i++)
     {
         printf("%.2f\n", host_out[i]);
-    }
+    }*/
+}
+
+void FillVBO(unsigned int vbo)
+{
+    struct cudaGraphicsResource* cudaResource;
+    cudaGraphicsGLRegisterBuffer(&cudaResource, vbo, cudaGraphicsMapFlagsNone);
+
+    cudaGraphicsMapResources(1, &cudaResource, 0);
+    float* positions;
+    size_t num_bytes;
+    cudaGraphicsResourceGetMappedPointer((void**)&positions, &num_bytes, cudaResource);
+
+
+
+
+
+
+
+
+
+
+
+
 
     cudaGraphicsUnmapResources(1, &cudaResource, 0);
-
     cudaGraphicsUnregisterResource(cudaResource);
 }

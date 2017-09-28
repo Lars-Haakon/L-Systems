@@ -1,5 +1,7 @@
 #include <GL/glew.h>
 #include <stdio.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "lsystem.h"
 #include "../cuda/cudainfo.cuh"
@@ -44,15 +46,56 @@ void LSystem::Generate(int n)
         generatedString = iterationString;
     }
 
-    m_size = 4*2*3;
+    int lookUpTableSize = 128*16*sizeof(float); // 128 matrices, 16 floats each matrix
+    float* lookUpTable = (float*)malloc(lookUpTableSize);
+    const float* identity =  glm::value_ptr(glm::mat4(1.0f));
+    for(int m = 0; m < 128; m++)
+    {
+        for(int i = 0; i < 16; i++)
+            lookUpTable[m*16+i] = identity[i];
+    }
+    const float* F = glm::value_ptr(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -m_distance)));
+    for(int i = 0; i < 16; i++)
+        lookUpTable['F'*16+i] = F[i];
+
+    const float* plus = glm::value_ptr(glm::rotate(glm::mat4(1.0f), glm::radians(m_angle), glm::vec3(0,1,0)));
+    for(int i = 0; i < 16; i++)
+        lookUpTable['+'*16+i] = plus[i];
+
+    const float* minus = glm::value_ptr(glm::rotate(glm::mat4(1.0f), glm::radians(-m_angle), glm::vec3(0,1,0)));
+    for(int i = 0; i < 16; i++)
+        lookUpTable['-'*16+i] = minus[i];
+
+    const float* ampersand = glm::value_ptr(glm::rotate(glm::mat4(1.0f), glm::radians(m_angle), glm::vec3(1,0,0)));
+    for(int i = 0; i < 16; i++)
+        lookUpTable['&'*16+i] = ampersand[i];
+
+    const float* caret = glm::value_ptr(glm::rotate(glm::mat4(1.0f), glm::radians(-m_angle), glm::vec3(1,0,0)));
+    for(int i = 0; i < 16; i++)
+        lookUpTable['^'*16+i] = caret[i];
+
+    const float* backslash = glm::value_ptr(glm::rotate(glm::mat4(1.0f), glm::radians(m_angle), glm::vec3(0,0,1)));
+    for(int i = 0; i < 16; i++)
+        lookUpTable['\\'*16+i] = backslash[i];
+
+    const float* slash = glm::value_ptr(glm::rotate(glm::mat4(1.0f), glm::radians(-m_angle), glm::vec3(0,0,1)));
+    for(int i = 0; i < 16; i++)
+        lookUpTable['/'*16+i] = slash[i];
+
+    const float* vertical = glm::value_ptr(glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0,1,0)));
+    for(int i = 0; i < 16; i++)
+        lookUpTable['|'*16+i] = vertical[i];
+
+    m_size = FillData(lookUpTable, lookUpTableSize, generatedString.c_str(), generatedString.length());
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, m_size * sizeof(float), 0, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
-    FillData(m_vbo);
+    FillVBO(m_vbo);
 
+    free(lookUpTable);
     /*std::vector<float> vertices;
     std::vector<int> indices;
 
