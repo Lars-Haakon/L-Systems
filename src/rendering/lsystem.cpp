@@ -87,6 +87,7 @@ void LSystem::Generate(int n)
         lookUpTable['|'*16+i] = vertical[i];
 
     m_size = FillData(lookUpTable, lookUpTableSize, generatedString.c_str(), generatedString.length());
+    m_size *= 2*3; // each line has 2 vertices and each vertex has 3 floats
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, m_size * sizeof(float), 0, GL_STATIC_DRAW);
