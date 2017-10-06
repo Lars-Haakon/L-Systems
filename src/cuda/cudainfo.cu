@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
-#include <cublas_v2.h>
 
 #include "cudainfo.cuh"
 
@@ -71,9 +70,6 @@ __global__ void HillisSteeleScan(float* transform, int *count, int n)
 
 __global__ void Count(float* device_lookUpTable, char* device_module, float* device_transform, int* device_count)
 {
-    cublasHandle_t cnpHandle;
-    cublasStatus_t status = cublasCreate(&cnpHandle);
-
     int bId = blockIdx.x;
     int tId = threadIdx.x;
 
