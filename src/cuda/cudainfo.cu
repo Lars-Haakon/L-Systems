@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
+#include <cublas_v2.h>
 
 #include "cudainfo.cuh"
 
@@ -20,7 +21,7 @@ __global__ void Fill(char* device_module, float* transform, int *count)
 
     if(device_module[tId] == 'F')
     {
-        
+
     }
 }
 
@@ -33,8 +34,8 @@ __global__ void HillisSteeleScan(float* transform, int *count, int n)
     // Load input into shared memory.
     // This is exclusive scan, so shift right by one
     // and set first element to 0
-    temp[pout*n + tId] = count[tId]; // inclusive
-    //temp[pout*n + tId] = (tId > 0) ? in[tId-1] : 0; // exclusive
+    temp[tId] = count[tId]; // inclusive
+    //temp[tId] = (tId > 0) ? in[tId-1] : 0; // exclusive
     __syncthreads();
     for (int offset = 1; offset < n; offset *= 2)
     {
@@ -70,6 +71,9 @@ __global__ void HillisSteeleScan(float* transform, int *count, int n)
 
 __global__ void Count(float* device_lookUpTable, char* device_module, float* device_transform, int* device_count)
 {
+    cublasHandle_t cnpHandle;
+    cublasStatus_t status = cublasCreate(&cnpHandle);
+
     int bId = blockIdx.x;
     int tId = threadIdx.x;
 
@@ -111,23 +115,6 @@ extern int FillData(float* lookUpTable, int lookUpTableSize, const char* module,
     dim3 numThreadsPerBlock2(moduleLength);
     dim3 numBlocks2(1);
     HillisSteeleScan<<<numBlocks2, numThreadsPerBlock2, 2*moduleLength*sizeof(int)>>>(device_transform, device_count, moduleLength);
-
-    /*float* host_matrix = (float*)malloc(16*sizeof(float));
-    cudaMemcpy(host_matrix, device_transform+7*16, 16*sizeof(float), cudaMemcpyDeviceToHost);
-    for(int i = 0; i < 4; i++)
-    {
-        for(int j = 0; j < 4; j++)
-        {
-            printf("%.2f ", host_matrix[i*4+j]);
-        }
-        printf("\n");
-    }*/
-    /*int* host_out = (int*) malloc(moduleLength*sizeof(int));
-    cudaMemcpy(host_out, device_count, moduleLength*sizeof(int), cudaMemcpyDeviceToHost);
-    for(int i = 0; i < moduleLength; i++)
-    {
-        printf("%d\n", host_out[i]);
-    }*/
 
     // get the last value
     int size = -1;
