@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include <sys/time.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -8,6 +9,13 @@
 #include "rendering/mesh.h"
 #include "rendering/shader.h"
 #include "rendering/lsystem.h"
+
+/* Timing */
+double walltime() {
+    static struct timeval t;
+    gettimeofday(&t, NULL);
+    return (t.tv_sec + 1e-6 * t.tv_usec);
+}
 
 void error_callback(int error, const char* description)
 {
@@ -92,9 +100,12 @@ int main()
     // camera setup
     Camera cam(Transform(glm::vec3(0, 4.0f, 8.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 10.0f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
 
-    /*LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
+    double start = walltime();
+    LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
     lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
-    lSystem.Generate(2);*/
+    lSystem.Generate(1);
+    double end = walltime();
+    printf("Execution time: %.5f\n", end-start);
 
     /*LSystem lSystem("F+F+F+F", 0.5f, 90.0f);
     lSystem.AddProduction('F', "F+f-FF+F+FF+Ff+FF-f+FF-F-FF-Ff-FFF");
@@ -117,12 +128,12 @@ int main()
     lSystem.Generate(10);*/
 
     // Hilbert Curve
-    LSystem lSystem("A", 0.5f, 90.0f);
+    /*LSystem lSystem("A", 0.5f, 90.0f);
     lSystem.AddProduction('A', "B-F+CFC+F-D&F^D-F+&&CFC+F+B//");
     lSystem.AddProduction('B', "A&F^CFB^F^D^^-F-D^|F^B|FC^F^A//");
     lSystem.AddProduction('C', "|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D//");
     lSystem.AddProduction('D', "|CFB-F+B|FA&F^A&&FB-F+B|FC//");
-    lSystem.Generate(3);
+    lSystem.Generate(3);*/
 
     /*float vertices[] = {-1.0f, -1.0f, 0.0f,
         1.0f, -1.0f, 0.0f,
