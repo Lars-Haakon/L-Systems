@@ -3,6 +3,6 @@
 
 extern void PrintCudaInfo();
 extern int FillData(float* lookUpTable, int lookUpTableSize, const char* module, int moduleLength);
-extern void FillVBO(unsigned int vbo);
+extern void FillVBO(unsigned int vbo, int moduleLength);
 
 #endif

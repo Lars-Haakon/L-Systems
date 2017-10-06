@@ -93,7 +93,7 @@ void LSystem::Generate(int n)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
-    FillVBO(m_vbo);
+    FillVBO(m_vbo, generatedString.length());
 
     free(lookUpTable);
     /*std::vector<float> vertices;

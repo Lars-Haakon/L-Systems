@@ -33,9 +33,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if(key != GLFW_KEY_UNKNOWN)
     {
         if(action == GLFW_PRESS)
-        keys[key] = true;
+            keys[key] = true;
         else if(action == GLFW_RELEASE)
-        keys[key] = false;
+            keys[key] = false;
     }
 }
 
