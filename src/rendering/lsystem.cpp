@@ -20,6 +20,7 @@ LSystem::LSystem(std::string axiom, float distance, float angle, Transform trans
 LSystem::~LSystem()
 {
     glDeleteBuffers(1, &m_vbo);
+    glDeleteBuffers(1, &m_ibo);
 }
 
 void LSystem::AddProduction(char predecessor, std::string successor)
@@ -45,6 +46,8 @@ void LSystem::Generate(int n)
 
         generatedString = iterationString;
     }
+
+    printf("Module length: %d\n", (int)generatedString.length());
 
     int lookUpTableSize = 128*16*sizeof(float); // 128 matrices, 16 floats each matrix
     float* lookUpTable = (float*)malloc(lookUpTableSize);
@@ -86,15 +89,19 @@ void LSystem::Generate(int n)
     for(int i = 0; i < 16; i++)
         lookUpTable['|'*16+i] = vertical[i];
 
-    m_size = FillData(lookUpTable, lookUpTableSize, generatedString.c_str(), generatedString.length());
-    m_size *= 2*3; // each line has 2 vertices and each vertex has 3 floats
+    int num_lines = FillData(lookUpTable, lookUpTableSize, generatedString.c_str(), generatedString.length());
+    int num_vertices = num_lines+1;
+    m_size = 2*num_lines;
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, m_size * sizeof(float), 0, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 3 * num_vertices * sizeof(float), 0, GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0);
 
-    FillVBO(m_vbo, generatedString.length());
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_size * sizeof(int), 0, GL_STATIC_DRAW);
+
+    FillVBO(m_vbo, m_ibo, generatedString.length());
 
     free(lookUpTable);
     /*std::vector<float> vertices;
@@ -224,9 +231,10 @@ void LSystem::Generate(int n)
 
 void LSystem::Draw()
 {
-    glBindVertexArray(m_vbo);
-    glDrawArrays(GL_LINES, 0, m_size);
-	//glDrawElements(GL_LINES, m_size, GL_UNSIGNED_INT, 0);
+    //glBindVertexArray(m_vbo);
+    //glDrawArrays(GL_LINES, 0, m_size);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glDrawElements(GL_LINES, m_size, GL_UNSIGNED_INT, 0);
 }
 
 std::string LSystem::GetSuccessor(char predecessor)
