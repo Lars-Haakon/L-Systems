@@ -30,12 +30,12 @@ __global__ void Fill(float* vertices, int* indices, char* device_module, float* 
         vertices[3*count[tId]+1] = transform[16*tId + 13];
         vertices[3*count[tId]+2] = transform[16*tId + 14];
 
-        indices[2*(count[tId]-1)] = count[tId]-1;
+        indices[2*count[tId]-2] = count[tId]-1;
         indices[2*count[tId]-1] = count[tId];
     }
 }
 
-__global__ void HillisSteeleScan(float* transform, int *count, int n)
+__global__ void HillisSteeleScan(float* transform, int* count, int n)
 {
     extern __shared__ int temp[]; // allocated on invocation
 
@@ -55,27 +55,20 @@ __global__ void HillisSteeleScan(float* transform, int *count, int n)
         temp[pout*n+tId] = temp[pin*n+tId] + ((tId >= offset)?temp[pin*n+tId - offset]:0);
 
         float* A = &transform[16*(pin*n + tId)];
-        float* B = &transform[16*(pin*n + tId - offset)];
+        float* B = &transform[16*(pin*n + tId-offset)];
         float* C = &transform[16*(pout*n + tId)];
 
-        if(tId >= offset)
-        {
-            for (int i = 0; i < 4; i++)
-        	{
-        		for (int j = 0; j < 4; j++)
-        		{
-        			C[i*4 + j] =	A[i*4+0] * B[0*4+j] +
-        							A[i*4+1] * B[1*4+j] +
-        							A[i*4+2] * B[2*4+j] +
-        							A[i*4+3] * B[3*4+j];
-        		}
-            }
-        }
-        else
-        {
-            for (int i = 0; i < 4; i++)
-        		for (int j = 0; j < 4; j++)
-                    C[i*4 + j] = A[i*4+j];
+        for (int i = 0; i < 4; i++)
+    	{
+    		for (int j = 0; j < 4; j++)
+    		{
+    			C[i*4 + j] =	((tId >= offset)    ?
+                                A[i*4+0] * B[0*4+j] +
+    							A[i*4+1] * B[1*4+j] +
+    							A[i*4+2] * B[2*4+j] +
+    							A[i*4+3] * B[3*4+j] :
+                                A[i*4+j]);
+    		}
         }
 
         __syncthreads();
@@ -139,19 +132,19 @@ extern int FillData(float* lookUpTable, int lookUpTableSize, const char* module,
     return size;
 }
 
-extern void FillVBO(unsigned int vbo, unsigned int ibo, int moduleLength)
+extern void FillBuffers(unsigned int vbo, unsigned int ibo, int moduleLength)
 {
+    // register VBO
     struct cudaGraphicsResource* cudaResourceVBO;
     cudaGraphicsGLRegisterBuffer(&cudaResourceVBO, vbo, cudaGraphicsMapFlagsNone);
-
     cudaGraphicsMapResources(1, &cudaResourceVBO, 0);
     float* vertices;
     size_t size_vertices;
     cudaGraphicsResourceGetMappedPointer((void**)&vertices, &size_vertices, cudaResourceVBO);
 
+    // register IBO
     struct cudaGraphicsResource* cudaResourceIBO;
     cudaGraphicsGLRegisterBuffer(&cudaResourceIBO, ibo, cudaGraphicsMapFlagsNone);
-
     cudaGraphicsMapResources(1, &cudaResourceIBO, 0);
     int* indices;
     size_t size_indices;
@@ -166,9 +159,11 @@ extern void FillVBO(unsigned int vbo, unsigned int ibo, int moduleLength)
     cudaFree(device_transform);
     cudaFree(device_count);
 
+    // unregister VBO
     cudaGraphicsUnmapResources(1, &cudaResourceVBO, 0);
     cudaGraphicsUnregisterResource(cudaResourceVBO);
 
+    // unregister IBO
     cudaGraphicsUnmapResources(1, &cudaResourceIBO, 0);
     cudaGraphicsUnregisterResource(cudaResourceIBO);
 }

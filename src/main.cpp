@@ -10,13 +10,6 @@
 #include "rendering/shader.h"
 #include "rendering/lsystem.h"
 
-/* Timing */
-double walltime() {
-    static struct timeval t;
-    gettimeofday(&t, NULL);
-    return (t.tv_sec + 1e-6 * t.tv_usec);
-}
-
 void error_callback(int error, const char* description)
 {
     printf("GLFW Error: %s\n", description);
@@ -49,12 +42,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 /*static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-float xdelta =  WIDTH/2 - (float)xpos;
-cam.Yaw(xdelta);
-float ydelta = HEIGHT/2 - (float)ypos;
-cam.Pitch(ydelta);
+    float xdelta =  WIDTH/2 - (float)xpos;
+    cam.Yaw(xdelta);
+    float ydelta = HEIGHT/2 - (float)ypos;
+    cam.Pitch(ydelta);
 
-glfwSetCursorPos(window, WIDTH/2, HEIGHT/2);
+    glfwSetCursorPos(window, WIDTH/2, HEIGHT/2);
 }*/
 
 int main()
@@ -66,7 +59,7 @@ int main()
 
     glfwSetErrorCallback(error_callback);
 
-    const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+    //const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
     GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "3DOpenGL", NULL, NULL);
     if(!window)
     {
@@ -79,7 +72,7 @@ int main()
     glfwSwapInterval(1);
 
     for(int i = 0; i < NUM_KEYS; i++)
-    keys[i] = false;
+        keys[i] = false;
     glfwSetKeyCallback(window, key_callback);
 
     //glfwSetCursorPosCallback(window, cursor_position_callback);
@@ -101,12 +94,12 @@ int main()
     // camera setup
     Camera cam(Transform(glm::vec3(0, 0.0f, 4.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 10.0f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
 
-    double start = walltime();
+    double start = glfwGetTime();
     LSystem lSystem("F-F-F-F", 0.1f, 90.0f, Transform(glm::vec3(0, 0, 0), glm::normalize(glm::quat(1, 1, 0, 0))));
     lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
     lSystem.Generate(1);
-    double end = walltime();
-    printf("Execution time: %.2f\n", end-start);
+    double end = glfwGetTime();
+    printf("Execution time: %.5f\n", end-start);
 
     /*LSystem lSystem("F+F+F+F", 0.5f, 90.0f);
     lSystem.AddProduction('F', "F+f-FF+F+FF+Ff+FF-f+FF-F-FF-Ff-FFF");
