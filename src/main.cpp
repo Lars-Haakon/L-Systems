@@ -95,9 +95,9 @@ int main()
     Camera cam(Transform(glm::vec3(0, 0.0f, 4.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 10.0f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
 
     double start = glfwGetTime();
-    LSystem lSystem("F-F-F-F", 0.1f, 90.0f, Transform(glm::vec3(0, 0, 0), glm::normalize(glm::quat(1, 1, 0, 0))));
-    lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
-    lSystem.Generate(1);
+    LSystem lSystem("A", 100, 30, 0.8f, 0.8f, 30.0f, -30.0f, 137.0f, 137.0f, 0.5f, 0.5f, 0.0f, Transform(glm::vec3(0, 0, 0), glm::normalize(glm::quat(1, 1, 0, 0))));
+    //lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
+    lSystem.Generate(10);
     double end = glfwGetTime();
     printf("Execution time: %.5f\n", end-start);
 

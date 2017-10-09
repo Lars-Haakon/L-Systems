@@ -6,12 +6,26 @@
 #include "lsystem.h"
 #include "../cuda/cudainfo.cuh"
 
-LSystem::LSystem(std::string axiom, float distance, float angle, Transform transform)
+LSystem::LSystem(std::string axiom, float s0, float w0,
+                            float r1, float r2,
+                            float a1, float a2,
+                            float t1, float t2,
+                            float q, float e,
+                            float min, Transform transform)
 : SceneObject(transform)
 {
     m_axiom = axiom;
-    m_distance = distance;
-    m_angle = angle;
+    m_s0 = s0;
+    m_w0 = w0;
+    m_r1 = r1;
+    m_r2 = r2;
+    m_a1 = a1;
+    m_a2 = a2;
+    m_t1 = t1;
+    m_t2 = t2;
+    m_q = q;
+    m_e = e;
+    m_min = min;
 
 	glGenBuffers(1, &m_vbo);
     glGenBuffers(1, &m_ibo);
@@ -33,7 +47,13 @@ void LSystem::AddProduction(char predecessor, std::string successor)
 
 void LSystem::Generate(int n)
 {
+    std::vector<int> parameterIndices;
+    std::vector<float> parameters;
+
     std::string generatedString = m_axiom;
+    parameters.push_back(m_s0);
+    parameters.push_back(m_w0);
+    parameterIndices.push_back(0);
 
     for(int i = 0; i < n; i++)
     {
@@ -57,6 +77,7 @@ void LSystem::Generate(int n)
         for(int i = 0; i < 16; i++)
             lookUpTable[m*16+i] = identity[i];
     }
+    /*
     const float* F = glm::value_ptr(glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -m_distance)));
     for(int i = 0; i < 16; i++)
         lookUpTable['F'*16+i] = F[i];
@@ -88,6 +109,7 @@ void LSystem::Generate(int n)
     const float* vertical = glm::value_ptr(glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0,1,0)));
     for(int i = 0; i < 16; i++)
         lookUpTable['|'*16+i] = vertical[i];
+    */
 
     int num_lines = FillData(lookUpTable, lookUpTableSize, generatedString.c_str(), generatedString.length());
     int num_vertices = num_lines+1;

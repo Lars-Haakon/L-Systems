@@ -14,7 +14,12 @@ struct Production
 class LSystem : public SceneObject
 {
 public:
-    LSystem(std::string axiom, float distance, float angle, Transform transform = Transform());
+    LSystem(std::string axiom, float s0, float w0,
+                                float r1, float r2,
+                                float a1, float a2,
+                                float t1, float t2,
+                                float q, float e,
+                                float min, Transform transform = Transform());
     ~LSystem();
 
     void AddProduction(char predecessor, std::string successor);
@@ -25,8 +30,17 @@ private:
     std::string GetSuccessor(char predecessor);
 
     std::string m_axiom;
-    float m_distance;
-    float m_angle;
+    float m_s0;
+    float m_w0;
+    float m_r1;
+    float m_r2;
+    float m_a1;
+    float m_a2;
+    float m_t1;
+    float m_t2;
+    float m_q;
+    float m_e;
+    float m_min;
     std::vector<Production> m_productions;
 
     unsigned int m_vbo;
