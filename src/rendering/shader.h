@@ -19,6 +19,7 @@ public:
 
 	int AddUniform(const char* uniform);
 	void SetUniformMat4(int uniformLocation, const float* matrix);
+    void SetUniformVec3(int uniformLocation, float x, float y, float z);
 private:
 	void AddProgram(std::string shaderSource, int type);
 	std::string LoadShaderSource(std::string fileName);

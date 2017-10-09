@@ -10,13 +10,6 @@
 #include "rendering/shader.h"
 #include "rendering/lsystem.h"
 
-/* Timing */
-double walltime() {
-    static struct timeval t;
-    gettimeofday(&t, NULL);
-    return (t.tv_sec + 1e-6 * t.tv_usec);
-}
-
 void error_callback(int error, const char* description)
 {
     printf("GLFW Error: %s\n", description);
@@ -76,7 +69,7 @@ int main()
     //glfwSetWindowPos(window, mode->width/2, mode->height/2);
 
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     for(int i = 0; i < NUM_KEYS; i++)
     keys[i] = false;
@@ -98,24 +91,22 @@ int main()
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
     // camera setup
-    Camera cam(Transform(glm::vec3(0, 4.0f, 8.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 10.0f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
+    Camera cam(Transform(glm::vec3(0, 2.0f, 5.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 10.0f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
 
-    double start = walltime();
-    LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
+    double start = glfwGetTime();
+    /*LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
     lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
-    lSystem.Generate(1);
-    double end = walltime();
-    printf("Execution time: %.5f\n", end-start);
+    lSystem.Generate(1);*/
 
     /*LSystem lSystem("F+F+F+F", 0.5f, 90.0f);
     lSystem.AddProduction('F', "F+f-FF+F+FF+Ff+FF-f+FF-F-FF-Ff-FFF");
     lSystem.AddProduction('f', "ffffff");
     lSystem.Generate(2);*/
 
-    /*LSystem lSystem("X", 0.1f, 22.5f);
+    LSystem lSystem("X", 0.1f, 22.5f);
     lSystem.AddProduction('X', "F-[/[X]+X]+F[&+FX]-X");
     lSystem.AddProduction('F', "FF");
-    lSystem.Generate(5);*/
+    lSystem.Generate(5);
 
     /*LSystem lSystem("F", 0.1f, 22.5f);
     lSystem.AddProduction('F', "FF-[-F+F+F]+[+F-F-F]");
@@ -135,20 +126,16 @@ int main()
     lSystem.AddProduction('D', "|CFB-F+B|FA&F^A&&FB-F+B|FC//");
     lSystem.Generate(3);*/
 
-    /*float vertices[] = {-1.0f, -1.0f, 0.0f,
-        1.0f, -1.0f, 0.0f,
-        0.0f,  1.0f, 0.0f};
-    int n_vertices = 3;
-    int indices[] = {0, 1, 2};
-    int n_indices = 3;
-
-    Mesh mesh(vertices, n_vertices, indices, n_indices);*/
+    double end = glfwGetTime();
+    printf("Execution time: %.5f\n", end-start);
 
     Shader shader;
     shader.AddVertexShader("test.vs");
+    shader.AddGeometryShader("test.gs");
     shader.AddFragmentShader("test.fs");
     shader.CompileShader();
     int MVPLocation = shader.AddUniform("MVP");
+    int eyeLocation = shader.AddUniform("eye");
 
     float lastTime = (float) glfwGetTime();
     float passedTime = 0.0f;
@@ -182,13 +169,13 @@ int main()
         glfwSetCursorPos(window, WIDTH/2, HEIGHT/2);
 
         if(keys[GLFW_KEY_W])
-        cam.Move(cam.GetTransform().Forward(), deltaTime);
+            cam.Move(cam.GetTransform().Forward(), deltaTime);
         if(keys[GLFW_KEY_S])
-        cam.Move(cam.GetTransform().Back(), deltaTime);
+            cam.Move(cam.GetTransform().Back(), deltaTime);
         if(keys[GLFW_KEY_D])
-        cam.Move(cam.GetTransform().Right(), deltaTime);
+            cam.Move(cam.GetTransform().Right(), deltaTime);
         if(keys[GLFW_KEY_A])
-        cam.Move(cam.GetTransform().Left(), deltaTime);
+            cam.Move(cam.GetTransform().Left(), deltaTime);
 
         // update
         //lSystem.GetTransform().SetRotation(glm::angleAxis(glm::radians(deltaTime*50.0f), lSystem.GetTransform().Up()) * lSystem.GetTransform().GetRotation());
@@ -202,6 +189,7 @@ int main()
 
         shader.Bind();
         shader.SetUniformMat4(MVPLocation, glm::value_ptr(projectionMatrix * viewMatrix * modelMatrix));
+        shader.SetUniformVec3(eyeLocation, cam.GetTransform().GetPosition()[0], cam.GetTransform().GetPosition()[1], cam.GetTransform().GetPosition()[2]);
         lSystem.Draw();
 
         glfwSwapBuffers(window);

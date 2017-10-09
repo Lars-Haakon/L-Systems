@@ -48,6 +48,11 @@ void Shader::SetUniformMat4(int uniformLocation, const float* matrix)
 	glUniformMatrix4fv(uniformLocation, 1, GL_FALSE, matrix);
 }
 
+void Shader::SetUniformVec3(int uniformLocation, float x, float y, float z)
+{
+    glUniform3f(uniformLocation, x, y, z);
+}
+
 void Shader::AddProgram(std::string shaderSource, int type)
 {
 	int shader = glCreateShader(type);
