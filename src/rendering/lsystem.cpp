@@ -45,6 +45,7 @@ void LSystem::Generate(int n)
     std::vector<float> vertices;
 
     Transform turtle(glm::vec3(0, 0, 0), glm::normalize(glm::quat(1, 1, 0, 0)));
+    float width = 0.05f;
 
     std::vector<Transform> turtleStack;
     for(std::string::iterator node = generatedString.begin(); node != generatedString.end(); node++)
@@ -57,7 +58,7 @@ void LSystem::Generate(int n)
                 vertices.push_back(pos[0]);
                 vertices.push_back(pos[1]);
                 vertices.push_back(pos[2]);
-                vertices.push_back(0.02f);
+                vertices.push_back(width);
 
                 turtle.SetPosition(turtle.GetPosition() + turtle.Forward() * m_distance);
 
@@ -65,7 +66,7 @@ void LSystem::Generate(int n)
                 vertices.push_back(pos[0]);
                 vertices.push_back(pos[1]);
                 vertices.push_back(pos[2]);
-                vertices.push_back(0.02f);
+                vertices.push_back(width);
                 break;
             }
             case 'f':
@@ -111,12 +112,16 @@ void LSystem::Generate(int n)
             case '[':
             {
                 turtleStack.push_back(turtle);
+
+                width -= 0.01f;
                 break;
             }
             case ']':
             {
                 turtle = turtleStack.back();
                 turtleStack.pop_back();
+
+                width += 0.01f;
                 break;
             }
         }

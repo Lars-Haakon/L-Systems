@@ -1,5 +1,6 @@
 #include "camera.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <stdio.h>
 
 Camera::Camera(Transform transform, float speed, float sensitivity,
                                     float fov, float aspectRatio, float near, float far)
@@ -12,6 +13,12 @@ Camera::Camera(Transform transform, float speed, float sensitivity,
 	m_aspectRatio = aspectRatio;
 	m_near = near;
     m_far = far;
+
+
+    /*Transform t(glm::vec3(0, 0, 0), glm::angleAxis(3.14f/2, glm::vec3(0, 1, 0)));
+    glm::vec3 f = t.Forward();
+
+    printf("%f %f %f\n", f[0], f[1], f[2]);*/
 }
 
 Camera::~Camera()

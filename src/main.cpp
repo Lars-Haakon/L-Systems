@@ -91,7 +91,7 @@ int main()
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
     // camera setup
-    Camera cam(Transform(glm::vec3(0, 2.0f, 5.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 10.0f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
+    Camera cam(Transform(glm::vec3(0, 2.0f, 0.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 0.5f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
 
     double start = glfwGetTime();
     /*LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
@@ -103,20 +103,20 @@ int main()
     lSystem.AddProduction('f', "ffffff");
     lSystem.Generate(2);*/
 
-    LSystem lSystem("X", 0.1f, 22.5f);
+    /*LSystem lSystem("X", 0.1f, 22.5f);
     lSystem.AddProduction('X', "F-[/[X]+X]+F[&+FX]-X");
     lSystem.AddProduction('F', "FF");
-    lSystem.Generate(5);
+    lSystem.Generate(5);*/
 
     /*LSystem lSystem("F", 0.1f, 22.5f);
     lSystem.AddProduction('F', "FF-[-F+F+F]+[+F-F-F]");
     lSystem.Generate(4);*/
 
     // Tree
-    /*LSystem lSystem("FFFA", 0.1f, 25.0f);
+    LSystem lSystem("FFFA", 0.1f, 25.0f);
     lSystem.AddProduction('A', "[B]////[B]////[B]");
     lSystem.AddProduction('B', "&FFFA");
-    lSystem.Generate(10);*/
+    lSystem.Generate(10);
 
     // Hilbert Curve
     /*LSystem lSystem("A", 0.5f, 90.0f);
@@ -131,9 +131,10 @@ int main()
 
     Shader shader;
     shader.AddVertexShader("test.vs");
-    shader.AddGeometryShader("test.gs");
+    shader.AddGeometryShader("cylinder.gs");
     shader.AddFragmentShader("test.fs");
     shader.CompileShader();
+    int MLocation = shader.AddUniform("M");
     int MVPLocation = shader.AddUniform("MVP");
     int eyeLocation = shader.AddUniform("eye");
 
@@ -188,7 +189,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.Bind();
-        shader.SetUniformMat4(MVPLocation, glm::value_ptr(projectionMatrix * viewMatrix * modelMatrix));
+        shader.SetUniformMat4(MLocation, glm::value_ptr(modelMatrix));
+        shader.SetUniformMat4(MVPLocation, glm::value_ptr(projectionMatrix * viewMatrix));
         shader.SetUniformVec3(eyeLocation, cam.GetTransform().GetPosition()[0], cam.GetTransform().GetPosition()[1], cam.GetTransform().GetPosition()[2]);
         lSystem.Draw();
 
