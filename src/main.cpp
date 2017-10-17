@@ -87,16 +87,17 @@ int main()
     printOpenGLInfo();
 
     glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
     glEnable(GL_DEPTH_CLAMP);
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
     // camera setup
-    Camera cam(Transform(glm::vec3(0, 2.0f, 0.0f), glm::normalize(glm::quat(1, 0, 0, 0))), 0.5f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
+    Camera cam(Transform(glm::vec3(0, 2.0f, 0.0f), glm::normalize(glm::quat(1, 0, 0, 0))), .5f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
 
     double start = glfwGetTime();
     /*LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
     lSystem.AddProduction('F', "F-F+F+FF-F-F+F");
-    lSystem.Generate(1);*/
+    lSystem.Generate(2);*/
 
     /*LSystem lSystem("F+F+F+F", 0.5f, 90.0f);
     lSystem.AddProduction('F', "F+f-FF+F+FF+Ff+FF-f+FF-F-FF-Ff-FFF");
@@ -135,8 +136,16 @@ int main()
     shader.AddFragmentShader("test.fs");
     shader.CompileShader();
     int MLocation = shader.AddUniform("M");
-    int MVPLocation = shader.AddUniform("MVP");
+    int VPLocation = shader.AddUniform("VP");
     int eyeLocation = shader.AddUniform("eye");
+
+    Shader shader2;
+    shader2.AddVertexShader("test2.vs");
+    //shader2.AddGeometryShader("cylinder.gs");
+    shader2.AddFragmentShader("test2.fs");
+    shader2.CompileShader();
+    int MLocation2 = shader2.AddUniform("M");
+    int VPLocation2 = shader2.AddUniform("VP");
 
     float lastTime = (float) glfwGetTime();
     float passedTime = 0.0f;
@@ -179,7 +188,6 @@ int main()
             cam.Move(cam.GetTransform().Left(), deltaTime);
 
         // update
-        //lSystem.GetTransform().SetRotation(glm::angleAxis(glm::radians(deltaTime*50.0f), lSystem.GetTransform().Up()) * lSystem.GetTransform().GetRotation());
         glm::mat4 modelMatrix = lSystem.GetTransform().GetModelMatrix();
 
         glm::mat4 viewMatrix = cam.GetViewMatrix();
@@ -190,8 +198,13 @@ int main()
 
         shader.Bind();
         shader.SetUniformMat4(MLocation, glm::value_ptr(modelMatrix));
-        shader.SetUniformMat4(MVPLocation, glm::value_ptr(projectionMatrix * viewMatrix));
+        shader.SetUniformMat4(VPLocation, glm::value_ptr(projectionMatrix * viewMatrix));
         shader.SetUniformVec3(eyeLocation, cam.GetTransform().GetPosition()[0], cam.GetTransform().GetPosition()[1], cam.GetTransform().GetPosition()[2]);
+        lSystem.Draw();
+
+        shader2.Bind();
+        shader2.SetUniformMat4(MLocation, glm::value_ptr(modelMatrix));
+        shader2.SetUniformMat4(VPLocation, glm::value_ptr(projectionMatrix * viewMatrix));
         lSystem.Draw();
 
         glfwSwapBuffers(window);

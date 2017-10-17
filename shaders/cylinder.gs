@@ -1,13 +1,12 @@
 #version 450
 
 #define PI 3.1415926535897932384626433832795
-#define LOD 8
+#define LOD 4
 
 layout (lines) in;
-layout (triangle_strip, max_vertices = 2*LOD) out;
+layout (triangle_strip, max_vertices = 2*(LOD+1)) out;
 
-uniform mat4 M;
-uniform mat4 MVP;
+uniform mat4 VP;
 uniform vec3 eye;
 
 vec4 mul(vec4 q0, vec4 q1)
@@ -27,8 +26,8 @@ vec4 conjugate(vec4 q)
 
 vec4 angleAxis(vec3 axis, float angle)
 {
-    float sinHalfAngle = sin(angle / 2);
-	float cosHalfAngle = cos(angle / 2);
+    float sinHalfAngle = sin(angle / 2.0);
+	float cosHalfAngle = cos(angle / 2.0);
 
 	return vec4(   axis.x * sinHalfAngle,
     	           axis.y * sinHalfAngle,
@@ -38,34 +37,31 @@ vec4 angleAxis(vec3 axis, float angle)
 
 vec3 rotate(vec3 v, vec4 q)
 {
-    vec4 _q = conjugate(q);
-    vec4 w = mul(mul(q, vec4(v, 0)), _q);
+    vec4 c = conjugate(q);
+    vec4 r = mul(mul(q, vec4(v, 0.0)), c);
 
-    return normalize(vec3(w.x, w.y, w.z));
+    return normalize(r.xyz);
 }
 
 vec3 forward(vec4 q)
 {
-    return rotate(vec3(0, 0, -1), q);
+    return rotate(vec3(0.0, 0.0, -1.0), q);
 }
 
 void main()
 {
-    vec4 worldPos0 = M*vec4(gl_in[0].gl_Position.xyz, 1);
-    vec4 worldPos1 = M*vec4(gl_in[1].gl_Position.xyz, 1);
+    vec3 v = normalize(gl_in[0].gl_Position.xyz - gl_in[1].gl_Position.xyz);
 
-    vec3 v = normalize(worldPos0.xyz - worldPos1.xyz);
-
-    for(int i = 0; i < LOD; i++)
+    for(int i = 0; i <= LOD; i++)
     {
-        float angle = ((2*PI)/(LOD-1))*i;
+        float angle = ((2.0*PI)/LOD)*i;
         vec4 q = angleAxis(v, angle);
         vec3 d = forward(q);
 
-        gl_Position = MVP * vec4(worldPos0.xyz+d*gl_in[0].gl_Position.w, 1);
+        gl_Position = VP*vec4(gl_in[0].gl_Position.xyz+(d*0.02), 1);
         EmitVertex();
 
-        gl_Position = MVP * vec4(worldPos1.xyz+d*gl_in[1].gl_Position.w, 1);
+        gl_Position = VP*vec4(gl_in[1].gl_Position.xyz+(d*0.02), 1);
         EmitVertex();
     }
 
