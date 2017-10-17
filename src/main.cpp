@@ -8,6 +8,7 @@
 #include "core/camera.h"
 #include "rendering/mesh.h"
 #include "rendering/shader.h"
+#include "rendering/texture.h"
 #include "rendering/lsystem.h"
 
 void error_callback(int error, const char* description)
@@ -138,14 +139,9 @@ int main()
     int MLocation = shader.AddUniform("M");
     int VPLocation = shader.AddUniform("VP");
     int eyeLocation = shader.AddUniform("eye");
+    int diffuseLocation = shader.AddUniform("diffuseMap");
 
-    Shader shader2;
-    shader2.AddVertexShader("test2.vs");
-    //shader2.AddGeometryShader("cylinder.gs");
-    shader2.AddFragmentShader("test2.fs");
-    shader2.CompileShader();
-    int MLocation2 = shader2.AddUniform("M");
-    int VPLocation2 = shader2.AddUniform("VP");
+    Texture t("tre4.bmp");
 
     float lastTime = (float) glfwGetTime();
     float passedTime = 0.0f;
@@ -200,11 +196,11 @@ int main()
         shader.SetUniformMat4(MLocation, glm::value_ptr(modelMatrix));
         shader.SetUniformMat4(VPLocation, glm::value_ptr(projectionMatrix * viewMatrix));
         shader.SetUniformVec3(eyeLocation, cam.GetTransform().GetPosition()[0], cam.GetTransform().GetPosition()[1], cam.GetTransform().GetPosition()[2]);
-        lSystem.Draw();
 
-        shader2.Bind();
-        shader2.SetUniformMat4(MLocation, glm::value_ptr(modelMatrix));
-        shader2.SetUniformMat4(VPLocation, glm::value_ptr(projectionMatrix * viewMatrix));
+        glActiveTexture(GL_TEXTURE0);
+        t.Bind();
+        glUniform1i(diffuseLocation, 0);
+
         lSystem.Draw();
 
         glfwSwapBuffers(window);

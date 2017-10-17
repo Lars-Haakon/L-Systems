@@ -58,7 +58,7 @@ void LSystem::Generate(int n)
                 vertices.push_back(pos[0]);
                 vertices.push_back(pos[1]);
                 vertices.push_back(pos[2]);
-                //vertices.push_back(width);
+                vertices.push_back(width);
 
                 turtle.SetPosition(turtle.GetPosition() + turtle.Forward() * m_distance);
 
@@ -66,7 +66,7 @@ void LSystem::Generate(int n)
                 vertices.push_back(pos[0]);
                 vertices.push_back(pos[1]);
                 vertices.push_back(pos[2]);
-                //vertices.push_back(width);
+                vertices.push_back(width);
                 break;
             }
             case 'f':
@@ -130,7 +130,7 @@ void LSystem::Generate(int n)
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
