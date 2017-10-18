@@ -24,8 +24,8 @@ void printOpenGLInfo()
     printf("GLSL Version: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 }
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 1600
+#define HEIGHT 900
 
 #define NUM_KEYS 350
 bool keys[NUM_KEYS];

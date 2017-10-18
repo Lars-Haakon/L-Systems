@@ -11,11 +11,13 @@ LSystem::LSystem(std::string axiom, float distance, float angle, Transform trans
     m_angle = angle;
 
 	glGenBuffers(1, &m_vbo);
+    glGenBuffers(1, &m_ibo);
 }
 
 LSystem::~LSystem()
 {
     glDeleteBuffers(1, &m_vbo);
+    glDeleteBuffers(1, &m_ibo);
 }
 
 void LSystem::AddProduction(char predecessor, std::string successor)
@@ -43,9 +45,15 @@ void LSystem::Generate(int n)
     }
 
     std::vector<float> vertices;
+    std::vector<int> indices;
 
     Transform turtle(glm::vec3(0, 0, 0), glm::normalize(glm::quat(1, 1, 0, 0)));
     float width = 0.06f;
+    std::vector<float> widthStack;
+
+    bool drawLine = false;
+    std::vector<int> indexStack(1, 0);
+    int nextIndex = 1;
 
     std::vector<Transform> turtleStack;
     for(std::string::iterator node = generatedString.begin(); node != generatedString.end(); node++)
@@ -54,6 +62,8 @@ void LSystem::Generate(int n)
         {
             case 'F':
             {
+                drawLine = true;
+
                 glm::vec3 pos = turtle.GetPosition();
                 vertices.push_back(pos[0]);
                 vertices.push_back(pos[1]);
@@ -61,16 +71,30 @@ void LSystem::Generate(int n)
                 vertices.push_back(width);
 
                 turtle.SetPosition(turtle.GetPosition() + turtle.Forward() * m_distance);
+                width -= 0.003f;
 
-                pos = turtle.GetPosition();
-                vertices.push_back(pos[0]);
-                vertices.push_back(pos[1]);
-                vertices.push_back(pos[2]);
-                vertices.push_back(width);
+
+                indices.push_back(indexStack.back());
+                indices.push_back(nextIndex++);
+                indexStack.pop_back();
+                indexStack.push_back(indices.back());
                 break;
             }
             case 'f':
             {
+                if(drawLine)
+                {
+                    glm::vec3 pos = turtle.GetPosition();
+                    vertices.push_back(pos[0]);
+                    vertices.push_back(pos[1]);
+                    vertices.push_back(pos[2]);
+                    vertices.push_back(width);
+
+                    indexStack.pop_back();
+                    indexStack.push_back(nextIndex++);
+                }
+                drawLine = false;
+
                 turtle.SetPosition(turtle.GetPosition() + turtle.Forward() * m_distance);
                 break;
             }
@@ -112,20 +136,38 @@ void LSystem::Generate(int n)
             case '[':
             {
                 turtleStack.push_back(turtle);
+                widthStack.push_back(width);
 
-                width -= 0.01f;
+                indexStack.push_back(indexStack.back());
+
                 break;
             }
             case ']':
             {
+                glm::vec3 pos = turtle.GetPosition();
+                vertices.push_back(pos[0]);
+                vertices.push_back(pos[1]);
+                vertices.push_back(pos[2]);
+                vertices.push_back(width);
+
                 turtle = turtleStack.back();
                 turtleStack.pop_back();
 
-                width += 0.01f;
+                width = widthStack.back();
+                widthStack.pop_back();
+
+                indexStack.pop_back();
+                nextIndex++;
                 break;
             }
         }
     }
+
+    glm::vec3 pos = turtle.GetPosition();
+    vertices.push_back(pos[0]);
+    vertices.push_back(pos[1]);
+    vertices.push_back(pos[2]);
+    vertices.push_back(width);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
@@ -133,17 +175,17 @@ void LSystem::Generate(int n)
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
 
-    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(int), &indices[0], GL_STATIC_DRAW);
 
-	m_size = vertices.size();
+	m_size = indices.size();
 }
 
 void LSystem::Draw()
 {
-    glBindVertexArray(m_vbo);
-    glDrawArrays(GL_LINES, 0, m_size);
-	//glDrawElements(GL_LINES, m_size, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(m_ibo);
+    //glDrawArrays(GL_LINES, 0, m_size);
+	glDrawElements(GL_LINES, m_size, GL_UNSIGNED_INT, 0);
 }
 
 std::string LSystem::GetSuccessor(char predecessor)
