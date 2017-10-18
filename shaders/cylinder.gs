@@ -1,7 +1,7 @@
 #version 450
 
 #define PI 3.1415926535897932384626433832795
-#define LOD 50
+#define LOD 20
 
 layout (lines) in;
 layout (triangle_strip, max_vertices = 2*(LOD+1)) out;

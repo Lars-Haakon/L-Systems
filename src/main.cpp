@@ -35,9 +35,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if(key != GLFW_KEY_UNKNOWN)
     {
         if(action == GLFW_PRESS)
-        keys[key] = true;
+            keys[key] = true;
         else if(action == GLFW_RELEASE)
-        keys[key] = false;
+            keys[key] = false;
     }
 }
 
@@ -73,11 +73,11 @@ int main()
     glfwSwapInterval(0);
 
     for(int i = 0; i < NUM_KEYS; i++)
-    keys[i] = false;
+        keys[i] = false;
     glfwSetKeyCallback(window, key_callback);
 
     //glfwSetCursorPosCallback(window, cursor_position_callback);
-    glfwSetCursorPos(window, WIDTH/2, HEIGHT/2);
+    glfwSetCursorPos(window, WIDTH/2.0f, HEIGHT/2.0f);
 
     //glewExperimental = GL_TRUE;
     if(glewInit() != GLEW_OK)
@@ -142,7 +142,7 @@ int main()
     int eyeLocation = shader.AddUniform("eye");
     int diffuseLocation = shader.AddUniform("diffuseMap");
 
-    Texture t("tre.bmp");
+    Texture texture("tre.bmp");
 
     float lastTime = (float) glfwGetTime();
     float passedTime = 0.0f;
@@ -203,7 +203,7 @@ int main()
         shader.SetUniformVec3(eyeLocation, cam.GetTransform().GetPosition()[0], cam.GetTransform().GetPosition()[1], cam.GetTransform().GetPosition()[2]);
 
         glActiveTexture(GL_TEXTURE0);
-        t.Bind();
+        texture.Bind();
         shader.SetUniform1i(diffuseLocation, 0);
 
         lSystem.Draw();
