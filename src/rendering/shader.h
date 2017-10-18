@@ -20,6 +20,7 @@ public:
 	int AddUniform(const char* uniform);
 	void SetUniformMat4(int uniformLocation, const float* matrix);
     void SetUniformVec3(int uniformLocation, float x, float y, float z);
+	void SetUniform1i(int uniformLocation, int i);
 private:
 	void AddProgram(std::string shaderSource, int type);
 	std::string LoadShaderSource(std::string fileName);

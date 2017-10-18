@@ -53,6 +53,11 @@ void Shader::SetUniformVec3(int uniformLocation, float x, float y, float z)
     glUniform3f(uniformLocation, x, y, z);
 }
 
+void Shader::SetUniform1i(int uniformLocation, int i)
+{
+	glUniform1i(uniformLocation, i);
+}
+
 void Shader::AddProgram(std::string shaderSource, int type)
 {
 	int shader = glCreateShader(type);

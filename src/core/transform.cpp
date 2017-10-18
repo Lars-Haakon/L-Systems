@@ -55,32 +55,47 @@ void Transform::SetScale(glm::vec3 scale)
 
 glm::vec3 Transform::Forward()
 {
-	return Rotate(glm::vec3(0, 0, -1), m_rotation);
+	float x = m_rotation[0];
+	float y = m_rotation[1];
+	float z = m_rotation[2];
+	float w = m_rotation[3];
+
+	return -glm::vec3(2*(x*z + w*y), 2*(y*z - w*x), 1-2*(x*x + y*y)); // Negate because -z is forward
 }
 
 glm::vec3 Transform::Back()
 {
-	return Rotate(glm::vec3(0, 0, 1), m_rotation);
+	return -Forward();
 }
 
 glm::vec3 Transform::Up()
 {
-	return Rotate(glm::vec3(0, 1, 0), m_rotation);
+	float x = m_rotation[0];
+	float y = m_rotation[1];
+	float z = m_rotation[2];
+	float w = m_rotation[3];
+
+	return glm::vec3(2*(x*y - w*z), 1-2*(x*x + z*z), 2*(y*z + w*x));
 }
 
 glm::vec3 Transform::Down()
 {
-	return Rotate(glm::vec3(0, -1, 0), m_rotation);
+	return -Up();
 }
 
 glm::vec3 Transform::Right()
 {
-	return Rotate(glm::vec3(1, 0, 0), m_rotation);
+	float x = m_rotation[0];
+	float y = m_rotation[1];
+	float z = m_rotation[2];
+	float w = m_rotation[3];
+
+	return glm::vec3(1-2*(y*y + z*z), 2*(x*y + w*z), 2*(x*z - w*y));
 }
 
 glm::vec3 Transform::Left()
 {
-	return Rotate(glm::vec3(-1, 0, 0), m_rotation);
+	return -Right();
 }
 
 glm::vec3 Transform::Rotate(glm::vec3 v, glm::quat q)

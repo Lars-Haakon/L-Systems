@@ -73,7 +73,6 @@ void LSystem::Generate(int n)
                 turtle.SetPosition(turtle.GetPosition() + turtle.Forward() * m_distance);
                 width -= 0.003f;
 
-
                 indices.push_back(indexStack.back());
                 indices.push_back(nextIndex++);
                 indexStack.pop_back();

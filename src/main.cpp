@@ -87,13 +87,14 @@ int main()
     }
     printOpenGLInfo();
 
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_DEPTH_CLAMP);
     glClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
     // camera setup
-    Camera cam(Transform(glm::vec3(0, 2.0f, 0.0f), glm::normalize(glm::quat(1, 0, 0, 0))), .5f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
+    Camera cam(Transform(glm::vec3(0, 1.0f, 2.0f), glm::normalize(glm::quat(1, 0, 0, 0))), .5f, 0.01f, 70.0f, WIDTH / (float) HEIGHT, 0.1f, 100.0f);
 
     double start = glfwGetTime();
     /*LSystem lSystem("F-F-F-F", 0.1f, 90.0f);
@@ -141,7 +142,7 @@ int main()
     int eyeLocation = shader.AddUniform("eye");
     int diffuseLocation = shader.AddUniform("diffuseMap");
 
-    Texture t("tre4.bmp");
+    Texture t("tre.bmp");
 
     float lastTime = (float) glfwGetTime();
     float passedTime = 0.0f;
@@ -167,12 +168,12 @@ int main()
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
 
-        float xdelta =  WIDTH/2 - (float)xpos;
+        float xdelta =  WIDTH/2.0f - (float)xpos;
         cam.Yaw(xdelta);
-        float ydelta = HEIGHT/2 - (float)ypos;
+        float ydelta = HEIGHT/2.0f - (float)ypos;
         cam.Pitch(ydelta);
 
-        glfwSetCursorPos(window, WIDTH/2, HEIGHT/2);
+        glfwSetCursorPos(window, WIDTH/2.0f, HEIGHT/2.0f);
 
         if(keys[GLFW_KEY_W])
             cam.Move(cam.GetTransform().Forward(), deltaTime);
@@ -182,6 +183,10 @@ int main()
             cam.Move(cam.GetTransform().Right(), deltaTime);
         if(keys[GLFW_KEY_A])
             cam.Move(cam.GetTransform().Left(), deltaTime);
+        if(keys[GLFW_KEY_E])
+            cam.Move(cam.GetTransform().Up(), deltaTime);
+        if(keys[GLFW_KEY_Q])
+            cam.Move(cam.GetTransform().Down(), deltaTime);
 
         // update
         glm::mat4 modelMatrix = lSystem.GetTransform().GetModelMatrix();
@@ -199,7 +204,7 @@ int main()
 
         glActiveTexture(GL_TEXTURE0);
         t.Bind();
-        glUniform1i(diffuseLocation, 0);
+        shader.SetUniform1i(diffuseLocation, 0);
 
         lSystem.Draw();
 

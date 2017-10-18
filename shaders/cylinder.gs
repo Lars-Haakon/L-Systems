@@ -30,7 +30,7 @@ void main()
     {
         float angle = ((2.0*PI)/LOD)*i;
         vec4 q = angleAxis(a, angle);
-        vec3 b = vec3(1-2*(q.y*q.y + q.z*q.z), 2*(q.x*q.y + q.z*q.w), 2*(q.x*q.z - q.w*q.y));
+        vec3 b = vec3(2*(q.x*q.z + q.w*q.y), 2*(q.y*q.z - q.w*q.x), 1-2*(q.x*q.x + q.y*q.y));
         vec3 c = normalize(cross(b, a));
 
         texel = vec2(angle/(2.0*PI), 0);
